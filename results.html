@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Amazon Review Analysis Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .chart-container {
+            width: 45%;
+            margin: 10px;
+            display: inline-block;
+        }
+        .pros-cons-container {
+            width: 45%;
+            margin: 10px;
+            display: inline-block;
+            vertical-align: top;
+        }
+        .tree ul {
+            list-style-type: none;
+            margin-left: 20px;
+        }
+        .wordcloud-container {
+            width: 90%;
+            margin: auto;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Amazon Review Analysis Results</h1>
+
+    <div class="chart-container">
+        <h2>Sentiment Analysis</h2>
+        <canvas id="sentimentChart"></canvas>
+    </div>
+
+    <div class="chart-container">
+        <h2>Rating Distribution</h2>
+        <canvas id="ratingChart"></canvas>
+    </div>
+
+    <div class="wordcloud-container">
+        <h2>Word Cloud</h2>
+        <img src="{{ wordcloud }}" alt="Word Cloud">
+    </div>
+
+    <div class="pros-cons-container">
+        <h2>Pros</h2>
+        <ul class="tree">
+            {% for aspect, sentences in pros.items() %}
+                {% if sentences %}
+                    <li>
+                        <strong>{{ aspect }}</strong>
+                        <ul>
+                            {% for sentence in sentences %}
+                                <li>{{ sentence }}</li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="pros-cons-container">
+        <h2>Cons</h2>
+        <ul class="tree">
+            {% for aspect, sentences in cons.items() %}
+                {% if sentences %}
+                    <li>
+                        <strong>{{ aspect }}</strong>
+                        <ul>
+                            {% for sentence in sentences %}
+                                <li>{{ sentence }}</li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+
+    <table>
+        <tr>
+            <th>Reviewer</th>
+            <th>Rating</th>
+            <th>Title</th>
+            <th>Review</th>
+            <th>Sentiment</th>
+        </tr>
+        {% for review in reviews %}
+        <tr>
+            <td>{{ review.reviewer }}</td>
+            <td>{{ review.rating }}</td>
+            <td>{{ review.title }}</td>
+            <td>{{ review.review }}</td>
+            <td>{{ review.sentiment }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <script>
+        var sentimentCtx = document.getElementById('sentimentChart').getContext('2d');
+        var sentimentChart = new Chart(sentimentCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Positive', 'Negative', 'Neutral'],
+                datasets: [{
+                    label: '# of Reviews',
+                    data: [{{ sentiment_counts.positive }}, {{ sentiment_counts.negative }}, {{ sentiment_counts.neutral }}],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(255, 206, 86, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        var ratingCtx = document.getElementById('ratingChart').getContext('2d');
+        var ratingChart = new Chart(ratingCtx, {
+            type: 'pie',
+            data: {
+                labels: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
+                datasets: [{
+                    label: 'Rating Distribution',
+                    data: [{{ rating_counts['1.0'] }}, {{ rating_counts['2.0'] }}, {{ rating_counts['3.0'] }}, {{ rating_counts['4.0'] }}, {{ rating_counts['5.0'] }}],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(54, 162, 235, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        });
+    </script>
+</body>
+</html>
